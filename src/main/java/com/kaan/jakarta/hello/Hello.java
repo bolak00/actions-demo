@@ -2,8 +2,8 @@ package com.kaan.jakarta.hello;
 
 public class Hello {
 
-	private String name;
-	
+	private final String name;
+
 	public Hello(String name) {
         this.name = name;
 	}
