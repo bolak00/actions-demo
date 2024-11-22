@@ -39,15 +39,19 @@ jobs:
         path: target/actions-demo.war
 
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag actions-demo:$(date +%s)
+      run: |
+        docker build . --file Dockerfile --tag actions-demo:latest
+        docker tag actions-demo:latest ghcr.io/${{ github.repository_owner }}/actions-demo:latest
 
-      # Log in to GitHub Container Registry
     - name: Log in to GitHub Container Registry
       uses: docker/login-action@v2
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Push Docker Image to GitHub Container Registry (Public)
+      run: docker push ghcr.io/${{ github.repository_owner }}/actions-demo:latest
 
     # Tag the image to include the GitHub Container Registry and push it
     - name: Tag and Push Docker Image to GitHub Container Registry
