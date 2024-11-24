@@ -71,28 +71,45 @@ jobs:
         # Stop and remove existing container if it exists
         docker stop actions-demo || true
         docker rm actions-demo || true
-
+        
         # Login to GitHub Container Registry
         echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
+        
         # Pull latest image
         docker pull ghcr.io/${{ github.repository_owner }}/actions-demo:latest
-
+        
         # Run new container
         docker run -d \
-          --name actions-demo \
-          --restart no \
-          -p 9080:9080 \
-          -p 9443:9443 \
-          -e WLP_LOGGING_CONSOLE_FORMAT=JSON \
-          -e WLP_LOGGING_CONSOLE_LOGLEVEL=INFO \
-          ghcr.io/${{ github.repository_owner }}/actions-demo:latest
-
-          # Add logging check after deployment
-          echo "Checking container logs..."
-          docker logs -f actions-demo &
+        --name actions-demo \
+        --restart no \
+        -p 9080:9080 \
+        -p 9443:9443 \
+        -e WLP_LOGGING_CONSOLE_FORMAT=JSON \
+        -e WLP_LOGGING_CONSOLE_LOGLEVEL=INFO \
+        ghcr.io/${{ github.repository_owner }}/actions-demo:latest
+        
+        # Wait for Liberty server to start
+        echo "Waiting for Liberty server to start..."
+        timeout 300 bash -c 'while ! docker logs actions-demo 2>&1 | grep -q "CWWKF0011I: The defaultServer server is ready to run a smarter planet."; do sleep 2; done' || {
+          echo "Timeout waiting for Liberty server to start"
+          docker logs actions-demo
+          exit 1
+        }
+        
+        # Verify application health
+        echo "Checking application health..."
+        for i in {1..5}; do
+          if docker exec actions-demo curl -s -f http://localhost:9080/health > /dev/null; then
+              echo "Application is healthy"
+              exit 0
+          fi
+          sleep 5
+        done
+        
+        echo "Application health check failed"
+        docker logs actions-demo
+        exit 1
         EOF
-
         # Copy deployment script to server
         scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no deploy.sh $HETZNER_USERNAME@$HETZNER_HOST:/root/deploy.sh
 
