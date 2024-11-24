@@ -4,7 +4,7 @@ COPY target/actions-demo.war /config/apps/
 
 EXPOSE 9080 9443
 
-ENTRYPOINT ["mvn", "liberty:run"]
+ENTRYPOINT ["opt/ol/wlp/bin/server", "run", "defaultServer"]
 
 HEALTHCHECK --interval=10s --timeout=3s --retries=3 \
   CMD curl -f http://localhost:9080/rest/health || exit 1
