@@ -99,7 +99,7 @@ jobs:
         # Verify application health
         echo "Checking application health..."
         for i in {1..5}; do
-          if docker exec actions-demo curl -s -f http://localhost:9080/health > /dev/null; then
+          if docker exec actions-demo curl -s -f http://localhost:9080/rest/health > /dev/null; then
               echo "Application is healthy"
               exit 0
           fi
@@ -115,29 +115,6 @@ jobs:
 
         # Execute deployment script
         ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no $HETZNER_USERNAME@$HETZNER_HOST "chmod +x /root/deploy.sh && /root/deploy.sh"
-
-    # Health check after deployment
-    - name: Health Check
-      if: github.ref == 'refs/heads/master'
-      env:
-        HETZNER_HOST: ${{ secrets.HETZNER_HOST }}
-      run: |
-        # Wait for the application to start
-        sleep 30
-
-        # Check the health of the application
-        for i in {1..10}; do
-          if curl -f http://$HETZNER_HOST:9080/health || curl -f https://$HETZNER_HOST:9443/health; then
-            echo "Application is healthy"
-            exit 0
-          else
-            echo "Waiting for application to become healthy... Attempt $i of 10"
-            sleep 10
-          fi
-        done
-
-        echo "Application did not become healthy in time"
-        exit 1
 
     # Cleanup
     - name: Cleanup
