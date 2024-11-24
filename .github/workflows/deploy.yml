@@ -1,0 +1,77 @@
+name: Deploy to Hetzner
+
+on:
+  workflow_run:
+    workflows: ["Build and Test CI for Open Liberty + JEE using maven"]
+    types:
+      - completed
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+    - name: Deploy to Hetzner
+      env:
+        HETZNER_HOST: ${{ secrets.HETZNER_HOST }}
+        HETZNER_USERNAME: ${{ secrets.HETZNER_USERNAME }}
+        HETZNER_SSH_KEY: ${{ secrets.HETZNER_SSH_KEY }}
+      run: |
+        # Write the SSH key to a file
+        echo "$HETZNER_SSH_KEY" > deploy_key
+        chmod 600 deploy_key
+
+        # Create deployment script
+        cat > deploy.sh << 'EOF'
+        #!/bin/bash
+        # Stop and remove existing container if it exists
+        docker stop actions-demo || true
+        docker rm actions-demo || true
+
+        # Login to GitHub Container Registry
+        echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+        # Pull latest image
+        docker pull ghcr.io/${{ github.repository_owner }}/actions-demo:latest
+
+        # Run new container
+        docker run -d \
+          --name actions-demo \
+          --restart unless-stopped \
+          -p 9080:9080 \
+          -p 9443:9443 \
+          ghcr.io/${{ github.repository_owner }}/actions-demo:latest
+        EOF
+
+        # Copy deployment script to server
+        scp -i deploy_key -o StrictHostKeyChecking=no deploy.sh $HETZNER_USERNAME@$HETZNER_HOST:/root/deploy.sh
+
+        # Execute deployment script
+        ssh -i deploy_key -o StrictHostKeyChecking=no $HETZNER_USERNAME@$HETZNER_HOST "chmod +x /root/deploy.sh && /root/deploy.sh"
+
+    - name: Health Check
+      run: |
+        # Wait for the application to start
+        sleep 30
+
+        # Check the health of the application
+        for i in {1..10}; do
+          if curl -f http://$HETZNER_HOST:9080/health; then
+            echo "Application is healthy"
+            exit 0
+          else
+            echo "Waiting for application to become healthy..."
+            sleep 10
+          fi
+        done
+
+        echo "Application did not become healthy in time"
+        exit 1
+
+    # Optional: Cleanup deployment key
+    - name: Cleanup
+      if: always()
+      run: rm -f deploy_key
