@@ -81,10 +81,16 @@ jobs:
         # Run new container
         docker run -d \
           --name actions-demo \
-          --restart unless-stopped \
+          --restart no \
           -p 9080:9080 \
           -p 9443:9443 \
+          -e WLP_LOGGING_CONSOLE_FORMAT=JSON \
+          -e WLP_LOGGING_CONSOLE_LOGLEVEL=INFO \
           ghcr.io/${{ github.repository_owner }}/actions-demo:latest
+
+          # Add logging check after deployment
+          echo "Checking container logs..."
+          docker logs -f actions-demo &
         EOF
 
         # Copy deployment script to server
