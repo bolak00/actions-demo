@@ -21,7 +21,6 @@ jobs:
   
       - name: Test and Build
         run: |
-          mvn -B test --file pom.xml
           mvn -B package --file pom.xml
   
       - name: Build and Tag Docker image
