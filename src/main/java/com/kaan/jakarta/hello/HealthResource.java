@@ -13,6 +13,7 @@ public class HealthResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response checkHealth() {
         return Response.ok()
+                .entity("{\"status\":\"UP\"}")
                 .build();
     }
 }
