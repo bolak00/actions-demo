@@ -12,15 +12,16 @@
 
     <httpEndpoint id="defaultHttpEndpoint" host="*" httpPort="9080" httpsPort="9443" />
 
-    <library id="PostgresLib">
-        <fileset dir="${server.config.dir}/lib" includes="postgresql*.jar"/>
+    <!-- PostgreSQL Configuration -->
+    <library id="postgresql-driver">
+        <file name="${server.config.dir}/apps/actions-demo.war"/>
     </library>
 
     <dataSource id="postgresDS" jndiName="jdbc/postgresDS">
-        <jdbcDriver libraryRef="PostgresLib"/>
+        <jdbcDriver libraryRef="postgresql-driver"/>
         <properties.postgresql
-                serverName="localhost"
-                portNumber="5432"
+                serverName="${POSTGRES_HOST}"
+                portNumber="${POSTGRES_PORT}"
                 databaseName="${POSTGRES_DB}"
                 user="${POSTGRES_USER}"
                 password="${POSTGRES_PASSWORD}"/>
