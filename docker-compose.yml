@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+
+  app:
+    image: icr.io/appcafe/open-liberty:full-java17-openj9-ubi-arm64
+    ports:
+      - "9080:9080"
+      - "9443:9443"
+    volumes:
+      - ./src/main/liberty/config/server.xml:/config/server.xml
+      - ./target/actions-demo.war:/config/apps/
+    entrypoint: [ "opt/ol/wlp/bin/server", "run", "defaultServer" ]
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9080/rest/health" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    depends_on:
+      - postgres
