@@ -14,7 +14,7 @@
 
     <!-- PostgreSQL Configuration -->
     <library id="postgresql-driver">
-        <fileset dir="lib" includes="postgres*.jar"/>
+        <fileset dir="lib" includes="postgres-*.jar"/>
     </library>
 
     <dataSource id="postgresDS" jndiName="jdbc/postgresDS">
