@@ -1,4 +1,4 @@
-package com.kaan.jakarta.hello;
+package com.kaan.jakarta.health;
 
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
