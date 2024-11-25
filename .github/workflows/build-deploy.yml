@@ -2,9 +2,9 @@ name: Build, Test and Deploy Pipeline
 
 on:
   push:
-    branches: ["master"]
+    branches: [ "master" ]
   pull_request:
-    branches: ["master"]
+    branches: [ "master" ]
 
 jobs:
   build:
@@ -23,6 +23,14 @@ jobs:
         run: |
           mvn -B package --file pom.xml
 
+      - name: Build and Tag Docker image
+        run: |
+          docker build . --file Dockerfile --tag ghcr.io/${{ github.repository_owner }}/actions-demo:latest \
+            --build-arg POSTGRES_DB=${{ secrets.POSTGRES_DB }} \
+            --build-arg POSTGRES_USER=${{ secrets.POSTGRES_USER }} \
+            --build-arg POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
@@ -30,66 +38,54 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Push Docker Image
+        run: docker push ghcr.io/${{ github.repository_owner }}/actions-demo:latest
+
       - name: Deploy to Hetzner
         env:
           HETZNER_HOST: ${{ secrets.HETZNER_HOST }}
           HETZNER_USERNAME: ${{ secrets.HETZNER_USERNAME }}
           HETZNER_SSH_KEY: ${{ secrets.HETZNER_SSH_KEY }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         run: |
           mkdir -p ~/.ssh && chmod 700 ~/.ssh
           echo "$HETZNER_SSH_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H $HETZNER_HOST >> ~/.ssh/known_hosts
           
-          # Create deployment directory structure
           cat > deploy.sh << 'EOF'
           #!/bin/bash
+          docker stop actions-demo || true
+          docker rm actions-demo || true
           
-          # Create deployment directory
-          mkdir -p ~/actions-demo/target
-          cd ~/actions-demo
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker pull ghcr.io/${{ github.repository_owner }}/actions-demo:latest
           
-          # Create .env file
-          cat > .env << EOFENV
-          POSTGRES_DB=${POSTGRES_DB}
-          POSTGRES_USER=${POSTGRES_USER}
-          POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-          EOFENV
+          docker run -d \
+            --name actions-demo \
+            --restart no \
+            -p 9080:9080 \
+            -p 9443:9443 \
+            -e WLP_LOGGING_CONSOLE_FORMAT=JSON \
+            -e WLP_LOGGING_CONSOLE_LOGLEVEL=INFO \
+            ghcr.io/${{ github.repository_owner }}/actions-demo:latest
           
-          # Stop and remove existing containers
-          docker-compose down || true
-          
-          # Start services
-          docker-compose up -d
-          
-          # Wait for application to be ready
-          timeout 300 bash -c 'while ! docker-compose logs app 2>&1 | grep -q "CWWKF0011I: The defaultServer server is ready"; do sleep 2; done' || {
-            docker-compose logs
+          timeout 300 bash -c 'while ! docker logs actions-demo 2>&1 | grep -q "CWWKF0011I: The defaultServer server is ready"; do sleep 2; done' || {
+            docker logs actions-demo
             exit 1
           }
           
-          # Health check
           for i in {1..5}; do
-            if curl -s -f http://localhost:9080/rest/health > /dev/null; then
+            if docker exec actions-demo curl -s -f http://localhost:9080/rest/health > /dev/null; then
                 exit 0
             fi
             sleep 5
           done
           
-          docker-compose logs
+          docker logs actions-demo
           exit 1
           EOF
           
-          # Copy deployment files
           scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no deploy.sh $HETZNER_USERNAME@$HETZNER_HOST:/root/deploy.sh
-          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no docker-compose.yml $HETZNER_USERNAME@$HETZNER_HOST:/root/actions-demo/docker-compose.yml
-          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no target/actions-demo.war $HETZNER_USERNAME@$HETZNER_HOST:/root/actions-demo/target/
-          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no src/main/liberty/config/server.xml $HETZNER_USERNAME@$HETZNER_HOST:/root/actions-demo/src/main/liberty/config/
-          
-          # Execute deployment
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no $HETZNER_USERNAME@$HETZNER_HOST "chmod +x /root/deploy.sh && /root/deploy.sh"
 
       - name: Cleanup
