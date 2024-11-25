@@ -20,8 +20,8 @@
     <dataSource id="postgresDS" jndiName="jdbc/postgresDS">
         <jdbcDriver libraryRef="postgresql-driver"/>
         <properties.postgresql
-                serverName="${POSTGRES_HOST}"
-                portNumber="${POSTGRES_PORT}"
+                serverName="localhost"
+                portNumber="5432"
                 databaseName="${POSTGRES_DB}"
                 user="${POSTGRES_USER}"
                 password="${POSTGRES_PASSWORD}"/>
