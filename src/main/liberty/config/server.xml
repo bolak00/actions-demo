@@ -14,6 +14,7 @@
 
 
     <dataSource id="postgresDS" jndiName="jdbc/postgresDS">
+        <jdbcDriver libraryRef="PostgresJDBCDriver"/>
         <properties.postgresql
                 serverName="localhost"
                 portNumber="5432"
@@ -21,6 +22,10 @@
                 user="${POSTGRES_USER}"
                 password="${POSTGRES_PASSWORD}"/>
     </dataSource>
+
+    <library id="PostgresJDBCDriver">
+        <file name="${project.build.directory}/lib/postgresql.jar"/>
+    </library>
 
     <webApplication location="actions-demo.war" contextRoot="/"/>
 </server>

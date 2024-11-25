@@ -25,6 +25,7 @@
 		<mockito-core-version>5.11.0</mockito-core-version>
 		<mockito-junit-version>5.11.0</mockito-junit-version>
 		<maven-surefire-version>3.5.2</maven-surefire-version>
+		<postgresql.version>42.7.4</postgresql.version>
 	</properties>
 
 	<dependencies>
@@ -91,6 +92,31 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>${compiler-plugin.version}</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.7.0</version>
+				<executions>
+					<execution>
+						<id>copy</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.postgresql</groupId>
+									<artifactId>postgresql</artifactId>
+									<version>${postgresql.version}</version>
+									<destFileName>postgresql.jar</destFileName>
+									<outputDirectory>${project.build.directory}/lib</outputDirectory>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<artifactId>maven-war-plugin</artifactId>
