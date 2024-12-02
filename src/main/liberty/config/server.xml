@@ -24,7 +24,7 @@
     </dataSource>
 
     <library id="PostgresJDBCDriver">
-        <fileset dir="${server.config.dir}/../../target/liberty/wlp/usr/servers/resources" includes="*.jar"/>
+        <fileset dir="/opt/ol/wlp/usr/shared/resources/" includes="*.jar"/>
     </library>
 
     <webApplication location="actions-demo.war" contextRoot="/"/>
