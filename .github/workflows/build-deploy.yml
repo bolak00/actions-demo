@@ -81,13 +81,13 @@ jobs:
           EOF
       
           # Stop any existing containers
-          docker-compose down
+          docker compose down
       
           # Start the database
-          docker-compose up -d
+          docker compose up -d
       
           # Wait for the database to be ready
-          timeout 30s bash -c 'until docker-compose exec -T postgres pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}; do sleep 2; done'
+          timeout 30s bash -c 'until docker compose exec -T postgres pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}; do sleep 2; done'
 
 
           # Deploying of the built image
