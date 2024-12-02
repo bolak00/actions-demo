@@ -13,7 +13,7 @@
     <httpEndpoint id="defaultHttpEndpoint" host="*" httpPort="9080" httpsPort="9443"/>
 
 
-    <dataSource id="postgresDS" jndiName="jdbc/postgresDS">
+    <dataSource id="postgresql" jndiName="jdbc/postgresql">
         <jdbcDriver libraryRef="PostgresJDBCDriver"/>
         <properties.postgresql
                 serverName="localhost"
@@ -24,7 +24,7 @@
     </dataSource>
 
     <library id="PostgresJDBCDriver">
-        <fileset dir="${server.config.dir}/resources" includes="postgresql*.jar"/>
+        <fileset dir="${server.config.dir}/../../target/liberty/wlp/usr/servers/resources" includes="*.jar"/>
     </library>
 
     <webApplication location="actions-demo.war" contextRoot="/"/>
