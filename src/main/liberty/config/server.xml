@@ -2,6 +2,7 @@
     <featureManager>
         <feature>webProfile-10.0</feature>
         <feature>jdbc-4.2</feature>
+        <feature>mpOpenAPI-3.1.1</feature>
     </featureManager>
 
     <basicRegistry id="defaultBasicRegistry" realm="BasicRealm">
@@ -24,7 +25,7 @@
     </dataSource>
 
     <library id="PostgresJDBCDriver">
-        <file name="${project.build.directory}/lib/postgresql.jar"/>
+        <fileset dir="${shared.resource.dir}" includes="postgresql*.jar"/>
     </library>
 
     <webApplication location="actions-demo.war" contextRoot="/"/>
