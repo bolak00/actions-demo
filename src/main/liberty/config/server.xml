@@ -22,6 +22,7 @@
                 user="${POSTGRES_USER}"
                 password="${POSTGRES_PASSWORD}"
                 useSSL="false"/>
+
     </dataSource>
 
     <library id="PostgresJDBCDriver">
