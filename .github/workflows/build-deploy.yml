@@ -73,6 +73,7 @@ jobs:
                 timeout: 5s
                 retries: 5
                 
+                
             actions-demo:
               image: ghcr.io/${{ github.repository_owner }}/actions-demo:latest
               container_name: actions-demo
@@ -87,7 +88,7 @@ jobs:
                 interval: 10s
                 timeout: 5s
                 retries: 30
-                restart: unless-stopped
+              restart: unless-stopped
                 
           volumes:
             postgres_data:
