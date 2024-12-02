@@ -16,11 +16,12 @@
     <dataSource id="postgresql" jndiName="jdbc/postgresql">
         <jdbcDriver libraryRef="PostgresJDBCDriver"/>
         <properties.postgresql
-                serverName="0.0.0.0"
+                serverName="localhost"
                 portNumber="5432"
                 databaseName="${POSTGRES_DB}"
                 user="${POSTGRES_USER}"
-                password="${POSTGRES_PASSWORD}"/>
+                password="${POSTGRES_PASSWORD}"
+                useSSL="false"/>
     </dataSource>
 
     <library id="PostgresJDBCDriver">

@@ -52,6 +52,7 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H $HETZNER_HOST >> ~/.ssh/known_hosts
           
+          
           cat > deploy.sh << 'EOF'
           #!/bin/bash
           docker stop actions-demo || true
