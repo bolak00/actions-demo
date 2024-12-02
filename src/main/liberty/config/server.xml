@@ -24,7 +24,7 @@
     </dataSource>
 
     <library id="PostgresJDBCDriver">
-        <fileset dir="${server.config.dir/resources}" includes="postgresql*.jar"/>
+        <fileset dir="${server.config.dir}/resources" includes="postgresql*.jar"/>
     </library>
 
     <webApplication location="actions-demo.war" contextRoot="/"/>
