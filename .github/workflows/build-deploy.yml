@@ -55,70 +55,56 @@ jobs:
 
           # (Re)deploying database
           cat > docker-compose.yml << 'EOF'
-          services:
-            postgres:
-              image: postgres:latest
-              container_name: postgres_db
-              ports:
-                - "5432:5432"
-              environment:
-                POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-                POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-                POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-              volumes:
-                - postgres_data:/var/lib/postgresql/data
-              healthcheck:
-                test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-                interval: 10s
-                timeout: 5s
-                retries: 5
-
-            actions-demo:
-              image: ghcr.io/${{ github.repository_owner }}/actions-demo:latest
-              container_name: actions-demo
-              ports:
-                - "9080:9080"
-                - "9443:9443"
-              depends_on:
-                postgres:
-                  condition: service_healthy
-              healthcheck:
-                test: ["CMD-SHELL", "curl -s -f http://localhost:9080/rest/health || exit 1"]
-                interval: 10s
-                timeout: 5s
-                retries: 30
-              restart: unless-stopped
-
-          volumes:
-            postgres_data:
-              name: postgres_data
-          EOF
-
-          # Stop any existing containers
-          docker-compose down
+          services:
+            postgres:
+              image: postgres:latest
+              container_name: postgres
+              ports:
+                - "5432:5432"
+              environment:
+                - POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+                - POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+                - POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+              volumes:
+                - postgres_data:/var/lib/postgresql/data
+              healthcheck:
+                test: ["CMD-SHELL", "pg_isready -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_PASSWORD }}"]
+                interval: 10s
+                timeout: 5s
+                retries: 5
+                
+            actions-demo:
+              image: ghcr.io/${{ github.repository_owner }}/actions-demo:latest
+              container_name: actions-demo
+              ports:
+                - "9080:9080"
+                - "9443:9443"
+              depends_on:
+                postgres:
+                  condition: service_healthy
+              healthcheck:
+                test: ["CMD-SHELL", "curl -s -f http://localhost:9080/rest/health || exit 1"]
+                interval: 10s
+                timeout: 5s
+                retries: 30
+                restart: unless-stopped
+                
+          volumes:
+            postgres_data:
+              name: postgres_data
+          EOF
       
-          # Login to GitHub Container Registry
-          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-      
-          # Start the services
-          docker-compose up -d
-      
-          # Wait for the application to be ready
-          timeout 300 bash -c 'while ! docker-compose logs actions-demo 2>&1 | grep -q "CWWKF0011I: The defaultServer server is ready"; do sleep 2; done' || {
-            docker-compose logs actions-demo
-            exit 1
-          }
+          # Stop any existing containers
+          docker compose down
 
-          # Check application health
-          for i in {1..5}; do
-            if docker-compose exec -T actions-demo curl -s -f http://localhost:9080/rest/health > /dev/null; then
-                exit 0
-            fi
-            sleep 5
-          done
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
       
-          docker-compose logs actions-demo
-          exit 1
+          # Start the database
+          docker compose up -d
+      
+          timeout 300 bash -c 'while ! docker-compose logs actions-demo 2>&1 | grep -q "CWWKF0011I: The defaultServer server is ready"; do sleep 2; done' || { docker-compose logs actions-demo exit 1 }
+
+          for i in {1..5}; do if docker-compose exec -T actions-demo curl -s -f http://localhost:9080/rest/health > /dev/null; then exit 0 fi sleep 5 done
           
           scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no deploy.sh $HETZNER_USERNAME@$HETZNER_HOST:/root/deploy.sh
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no $HETZNER_USERNAME@$HETZNER_HOST "chmod +x /root/deploy.sh && /root/deploy.sh"
