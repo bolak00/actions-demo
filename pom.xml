@@ -146,13 +146,6 @@
 					</execution>
 				</executions>
 				<configuration>
-					<runtimeArtifact>
-						<!-- WLP without preinstalled feature(s) -->
-						<groupId>com.ibm.websphere.appserver.runtime</groupId>
-						<artifactId>wlp-kernel</artifactId>
-						<version>24.0.0.5</version>
-						<type>zip</type>
-					</runtimeArtifact>
 					<copyDependencies>
 						<dependencyGroup>
 							<location>${project.build.directory}/liberty/wlp/usr/shared/resources</location>
