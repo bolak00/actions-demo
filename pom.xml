@@ -108,18 +108,15 @@
                         <id>copy</id>
                         <phase>package</phase>
                         <goals>
-                            <goal>copy</goal>
+                            <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.postgresql</groupId>
-                                    <artifactId>postgresql</artifactId>
-                                    <version>${postgresql.version}</version>
-                                    <destFileName>postgresql.jar</destFileName>
-                                    <outputDirectory>${project.build.directory}/lib</outputDirectory>
-                                </artifactItem>
-                            </artifactItems>
+                            <outputDirectory>${wlp.user.dir}/servers/defaultServer/resources</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                            <excludeTransitive>true</excludeTransitive>
+                            <includeTypes>jar</includeTypes>
+                            <includeGroupIds>org.postgresql</includeGroupIds>
                         </configuration>
                     </execution>
                 </executions>
@@ -136,40 +133,29 @@
             <plugin>
                 <groupId>io.openliberty.tools</groupId>
                 <artifactId>liberty-maven-plugin</artifactId>
-                <version>3.8.2</version>
+                <version>${liberty-plugin.version}</version>
                 <executions>
                     <execution>
-                        <id>create-server</id>
+                        <id>package-server</id>
                         <phase>package</phase>
                         <goals>
                             <goal>create</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>copy-postgresql</id>
-                        <phase>prepare-package</phase>
-                        <goals>
                             <goal>install-feature</goal>
+                            <goal>deploy</goal>
+                            <goal>package</goal>
                         </goals>
+                        <configuration>
+                            <outputDirectory>target/wlp-package</outputDirectory>
+                        </configuration>
                     </execution>
                 </executions>
                 <configuration>
-                    <runtimeArtifact>
-                        <groupId>com.ibm.websphere.appserver.runtime</groupId>
-                        <artifactId>wlp-kernel</artifactId>
-                        <version>24.0.0.5</version>
-                        <type>zip</type>
-                    </runtimeArtifact>
-                    <copyDependencies>
-                        <dependencyGroup>
-                            <location>${project.build.directory}/liberty/wlp/usr/shared/resources</location>
-                            <dependency>
-                                <groupId>org.postgresql</groupId>
-                                <artifactId>postgresql</artifactId>
-                                <version>${postgresql.version}</version>
-                            </dependency>
-                        </dependencyGroup>
-                    </copyDependencies>
+                    <include>runnable</include>
+                    <serverName>actions-demo-server</serverName>
+                    <bootstrapProperties>
+                        <project.name>actions-demo</project.name>
+                        <jwt.issuer>http://168.119.125.52:9080</jwt.issuer>
+                    </bootstrapProperties>
                 </configuration>
             </plugin>
             <plugin>
