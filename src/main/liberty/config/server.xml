@@ -24,7 +24,7 @@
     </dataSource>
 
     <library id="PostgresJDBCDriver">
-        <fileset dir="/opt/ol/wlp/usr/shared/resources/" includes="*.jar"/>
+        <fileset dir="${shared.resource.dir}" includes="*.jar"/>
     </library>
 
     <webApplication location="actions-demo.war" contextRoot="/"/>

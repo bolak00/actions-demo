@@ -100,46 +100,6 @@
                 <version>${compiler-plugin.version}</version>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.7.0</version>
-                <executions>
-                    <execution>
-                        <id>copy</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/liberty/wlp/usr/shared/resources</outputDirectory>
-                            <overWriteReleases>false</overWriteReleases>
-                            <overWriteSnapshots>true</overWriteSnapshots>
-                            <excludeTransitive>true</excludeTransitive>
-                            <includeTypes>jar</includeTypes>
-                            <includeGroupIds>org.postgresql</includeGroupIds>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>3.0.0</version>
-                <executions>
-                    <execution>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <echo message="Project build directory: ${project.build.directory}"/>
-                            </target>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <artifactId>maven-war-plugin</artifactId>
                 <version>${war-plugin.version}</version>
                 <configuration>
@@ -151,29 +111,34 @@
             <plugin>
                 <groupId>io.openliberty.tools</groupId>
                 <artifactId>liberty-maven-plugin</artifactId>
-                <version>${liberty-plugin.version}</version>
+                <version>3.8.2</version>
                 <executions>
                     <execution>
-                        <id>package-server</id>
+                        <id>copy</id>
                         <phase>package</phase>
                         <goals>
                             <goal>create</goal>
-                            <goal>install-feature</goal>
-                            <goal>deploy</goal>
-                            <goal>package</goal>
                         </goals>
-                        <configuration>
-                            <outputDirectory>target/wlp-package</outputDirectory>
-                        </configuration>
                     </execution>
                 </executions>
                 <configuration>
-                    <include>runnable</include>
-                    <serverName>actions-demo-server</serverName>
-                    <bootstrapProperties>
-                        <project.name>actions-demo</project.name>
-                        <jwt.issuer>http://168.119.125.52:9080</jwt.issuer>
-                    </bootstrapProperties>
+                    <runtimeArtifact>
+                        <!-- WLP without preinstalled feature(s) -->
+                        <groupId>com.ibm.websphere.appserver.runtime</groupId>
+                        <artifactId>wlp-kernel</artifactId>
+                        <version>24.0.0.5</version>
+                        <type>zip</type>
+                    </runtimeArtifact>
+                    <copyDependencies>
+                        <dependencyGroup>
+                            <location>${project.build.directory}/liberty/wlp/usr/shared/resources</location>
+                            <dependency>
+                                <groupId>org.postgresql</groupId>
+                                <artifactId>postgresql</artifactId>
+                                <version>${postgresql.version}</version>
+                            </dependency>
+                        </dependencyGroup>
+                    </copyDependencies>
                 </configuration>
             </plugin>
             <plugin>
