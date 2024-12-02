@@ -5,12 +5,12 @@
     </featureManager>
 
     <basicRegistry id="defaultBasicRegistry" realm="BasicRealm">
-        <user name="username" password="password" />
+        <user name="username" password="password"/>
     </basicRegistry>
 
-    <keyStore id="defaultKeyStore" password="password" />
+    <keyStore id="defaultKeyStore" password="password"/>
 
-    <httpEndpoint id="defaultHttpEndpoint" host="*" httpPort="9080" httpsPort="9443" />
+    <httpEndpoint id="defaultHttpEndpoint" host="*" httpPort="9080" httpsPort="9443"/>
 
 
     <dataSource id="postgresDS" jndiName="jdbc/postgresDS">
@@ -24,7 +24,7 @@
     </dataSource>
 
     <library id="PostgresJDBCDriver">
-        <fileset dir="${project.build.directory}/liberty/wlp/usr/shared/resources" includes="postgresql*.jar"/>
+        i<fileset dir="${server.config.dir}/../usr/shared/resources" includes="postgresql*.jar"/>
     </library>
 
     <webApplication location="actions-demo.war" contextRoot="/"/>
