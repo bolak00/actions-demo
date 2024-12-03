@@ -10,6 +10,12 @@ COPY ./target/liberty/wlp/usr/shared/resources/postgresql*.jar /opt/ol/wlp/usr/s
 # Copy the application WAR file
 COPY ./target/actions-demo.war /config/apps/
 
+# The environment variables need to be passed through to Liberty
+ENV POSTGRES_DB=${POSTGRES_DB} \
+    POSTGRES_USER=${POSTGRES_USER} \
+    POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+
+
 # Set the entrypoint to run the server
 ENTRYPOINT [ "opt/ol/wlp/bin/server", "run", "defaultServer" ]
 
