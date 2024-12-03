@@ -17,9 +17,9 @@
         <properties.postgresql
                 serverName="168.119.125.52"
                 portNumber="5432"
-                databaseName="${POSTGRES_DB}"
-                user="${POSTGRES_USER}"
-                password="${POSTGRES_PASSWORD}"/>
+                databaseName="${env.POSTGRES_DB}"
+                user="${env.POSTGRES_USER}"
+                password="${env.POSTGRES_PASSWORD}"/>
 
     </dataSource>
 
