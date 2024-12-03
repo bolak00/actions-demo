@@ -77,10 +77,6 @@ jobs:
           volumes:
             postgres_data:
               name: postgres_data
-
-          networks:
-            actions-demo-network:
-              name: actions-demo-network
           EOF
       
           # Stop any existing containers
