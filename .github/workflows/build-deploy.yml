@@ -52,46 +52,6 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H $HETZNER_HOST >> ~/.ssh/known_hosts
 
-
-          # (Re)deploying database
-          cat > docker-compose.yml << 'EOF'
-          services:
-            postgres:
-              image: postgres:latest
-              container_name: postgres
-              ports:
-                - "5432:5432"
-              environment:
-                - POSTGRES_DB=${{ secrets.POSTGRES_DB }}
-                - POSTGRES_USER=${{ secrets.POSTGRES_USER }}
-                - POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-              volumes:
-                - postgres_data:/var/lib/postgresql/data
-              healthcheck:
-                test: ["CMD-SHELL", "pg_isready -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_PASSWORD }}"]
-                interval: 10s
-                timeout: 5s
-                retries: 5
-              networks:
-                - actions-demo-network
-          volumes:
-            postgres_data:
-              name: postgres_data
-          networks:
-            actions-demo-network:
-              name: actions-demo-network
-          EOF
-      
-          # Stop any existing containers
-          docker compose down
-      
-          # Start the database
-          docker compose up -d
-      
-          # Wait for the database to be ready
-          timeout 30s bash -c 'until docker compose exec -T postgres pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}; do sleep 2; done'
-
-
           # Deploying of the built image
           cat > deploy.sh << 'EOF'
           #!/bin/bash
