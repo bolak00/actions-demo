@@ -72,9 +72,15 @@ jobs:
                 interval: 10s
                 timeout: 5s
                 retries: 5
+              networks:
+                - actions-demo-network
           volumes:
             postgres_data:
               name: postgres_data
+
+          networks:
+            actions-demo-network:
+              name: actions-demo-network
           EOF
       
           # Stop any existing containers
@@ -96,7 +102,7 @@ jobs:
           echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           docker pull ghcr.io/${{ github.repository_owner }}/actions-demo:latest
           
-          docker run -d --name actions-demo -p 9080:9080 -p 9443:9443 ghcr.io/${{ github.repository_owner }}/actions-demo:latest
+          docker run -d --name actions-demo --network actions-demo-network -p 9080:9080 -p 9443:9443 ghcr.io/${{ github.repository_owner }}/actions-demo:latest
           
           timeout 300 bash -c 'while ! docker logs actions-demo 2>&1 | grep -q "CWWKF0011I: The defaultServer server is ready"; do sleep 2; done' || {
             docker logs actions-demo
