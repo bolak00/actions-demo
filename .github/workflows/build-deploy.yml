@@ -61,7 +61,7 @@ jobs:
           echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           docker pull ghcr.io/${{ github.repository_owner }}/actions-demo:latest
           
-          docker run -d --name actions-demo --network actions-demo-network -p 9080:9080 -p 9443:9443 ghcr.io/${{ github.repository_owner }}/actions-demo:latest
+          docker run -d --name actions-demo --network actions-demo-network -p 9080:9080 -p 9443:9443 -e POSTGRES_DB=${{ secrets.POSTGRES_DB }} -e POSTGRES_USER=${{ secrets.POSTGRES_USER }} -e POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} ghcr.io/${{ github.repository_owner }}/actions-demo:latest
           
           timeout 300 bash -c 'while ! docker logs actions-demo 2>&1 | grep -q "CWWKF0011I: The defaultServer server is ready"; do sleep 2; done' || {
             docker logs actions-demo
