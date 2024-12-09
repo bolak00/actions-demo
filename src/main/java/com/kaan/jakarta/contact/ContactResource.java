@@ -1,5 +1,6 @@
 package com.kaan.jakarta.contact;
 
+import com.kaan.jakarta.auth.Secured;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -9,6 +10,7 @@ import java.util.List;
 @Path("contact")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@Secured
 public class ContactResource {
 
     @Inject
