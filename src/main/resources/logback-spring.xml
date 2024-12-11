@@ -1,13 +1,18 @@
 <configuration>
-    <!-- Socket Appender for Logstash -->
-    <appender name="LOGSTASH" class="ch.qos.logback.classic.net.SocketAppender">
-        <remoteHost>logstash</remoteHost> <!-- Replace with Logstash container name or IP -->
-        <port>5044</port> <!-- Port Logstash is listening on -->
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder" />
+    <!-- For Filebeat -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>/logs/logfile.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>/logs/logfile.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
     </appender>
 
     <!-- Root Logger -->
     <root level="info">
-        <appender-ref ref="LOGSTASH" />
+        <appender-ref ref="FILE" />
     </root>
 </configuration>
